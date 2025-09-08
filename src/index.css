@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+#root {
+    max-width: 760px;
+    margin: 0 auto;
+    align-content: center;
+}
+
+input {
+    background-color: var(--color-amber-100);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-amber-400);
+}
+
+button {
+    cursor: pointer;
+}
