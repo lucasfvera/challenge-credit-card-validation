@@ -1,25 +1,96 @@
+import { useMemo, useState } from "react";
 import "./App.css";
+import { CardImage } from "./components/CardImage";
+import { errorMessages, validators } from "./utils/validators";
+import { ErrorMessage } from "./components/ErrorMessage";
+
+const INITIAL_STATE = {
+    cardNumber: {
+        value: "",
+        errors: [errorMessages.cardNumber],
+    },
+    cardName: {
+        value: "",
+        errors: [errorMessages.cardName],
+    },
+    expirationMonth: {
+        value: "",
+        errors: [errorMessages.expirationMonth],
+    },
+    expirationYear: {
+        value: "",
+        errors: [errorMessages.expirationYear],
+    },
+    cardCode: {
+        value: "",
+        errors: [errorMessages.cardCode],
+    },
+};
 
 function App() {
+    const [formState, setFormState] = useState(INITIAL_STATE);
+
+    const resetError = (target: keyof typeof formState) => {
+        setFormState((prev) => ({
+            ...prev,
+            [target]: {
+                ...prev[target],
+                errors: [],
+            },
+        }));
+    };
+
+    const setError = (target: keyof typeof formState, message: string) => {
+        setFormState((prev) => ({
+            ...prev,
+            [target]: {
+                ...prev[target],
+                errors: [message],
+            },
+        }));
+    };
+
+    const changeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target.name as keyof typeof formState;
+        const value = e.target.value;
+
+        setFormState((prev) => ({
+            ...prev,
+            [target]: {
+                ...prev[target],
+                value: value,
+            },
+        }));
+        const { isValid } = validators[target](value);
+        if (!isValid) {
+            setError(target, errorMessages[target]);
+        } else {
+            resetError(target);
+        }
+    };
+
+    const isDisabled = useMemo(() => {
+        let disable = false;
+        for (const key in formState) {
+            disable =
+                formState[key as keyof typeof formState].errors.length > 0 ||
+                disable;
+        }
+        return disable;
+    }, [formState]);
+
     return (
         <div>
             <div className="container">
                 <h1 className="text-2xl">Credit Card</h1>
 
-                <div className="h-[270px] w-[430px] bg-amber-400 self-center p-8 rounded-2xl relative flex flex-col">
-                    <p>XXXXXXXXXXXXXXXX</p>
-                    <br />
-                    <br />
-                    <br />
-                    <div className="w-full h-[40px] absolute top-16 left-0 bg-neutral-900"></div>
-                    <div className="flex flex-col flex-1 justify-between">
-                        <p>CARD HOLDER</p>
-                        <div className="flex justify-between">
-                            <p>MM/YYYY</p>
-                            <p>CVV</p>
-                        </div>
-                    </div>
-                </div>
+                <CardImage
+                    cardNumber={formState.cardNumber.value}
+                    cardName={formState.cardName.value}
+                    expirationMonth={formState.expirationMonth.value}
+                    expirationYear={formState.expirationYear.value}
+                    cardCode={formState.cardCode.value}
+                />
 
                 <form
                     className="flex flex-col gap-6"
@@ -31,8 +102,10 @@ function App() {
                             type="text"
                             id="card-number-input"
                             name="cardNumber"
+                            onChange={changeHandler}
+                            value={formState.cardNumber.value}
                         />
-                        <p className="text-red-700">Invalid Card Number</p>
+                        <ErrorMessage errors={formState.cardNumber.errors} />
                     </div>
                     <div className="flex flex-col gap-1">
                         <label htmlFor="card-number-input">Card Name</label>
@@ -40,31 +113,58 @@ function App() {
                             type="text"
                             id="card-number-input"
                             name="cardName"
+                            onChange={changeHandler}
+                            value={formState.cardName.value}
                         />
-                        <p className="text-red-700">Invalid Card Name</p>
+                        <ErrorMessage errors={formState.cardName.errors} />
                     </div>
                     <div className="flex gap-4">
                         <div className="flex flex-col gap-1">
-                            <label htmlFor="card-number-input">
+                            <label htmlFor="exp-month-input">
                                 Expiration Month
                             </label>
-                            <input id="card-number-input" name="cardNumber" />
-                            <p className="text-red-700">Invalid Month</p>
+                            <input
+                                type="number"
+                                id="exp-month-input"
+                                name="expirationMonth"
+                                onChange={changeHandler}
+                                value={formState.expirationMonth.value}
+                            />
+                            <ErrorMessage
+                                errors={formState.expirationMonth.errors}
+                            />
                         </div>
                         <div className="flex flex-col gap-1">
-                            <label htmlFor="card-number-input">
+                            <label htmlFor="exp-year-input">
                                 Expiration Year
                             </label>
-                            <input id="card-number-input" name="cardNumber" />
-                            <p className="text-red-700">Invalid Year</p>
+                            <input
+                                type="number"
+                                id="exp-year-input"
+                                name="expirationYear"
+                                onChange={changeHandler}
+                                value={formState.expirationYear.value}
+                            />
+                            <ErrorMessage
+                                errors={formState.expirationYear.errors}
+                            />
                         </div>
                         <div className="flex flex-col gap-1">
-                            <label htmlFor="card-number-input">CVV</label>
-                            <input id="card-number-input" name="cardNumber" />
-                            <p className="text-red-700">Invalid CVV</p>
+                            <label htmlFor="card-code-input">CVV</label>
+                            <input
+                                type="number"
+                                id="card-code-input"
+                                name="cardCode"
+                                onChange={changeHandler}
+                                value={formState.cardCode.value}
+                            />
+                            <ErrorMessage errors={formState.cardCode.errors} />
                         </div>
                     </div>
-                    <button className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 disabled:bg-emerald-200 w-full p-4 rounded-2xl font-semibold transition-all">
+                    <button
+                        disabled={isDisabled}
+                        className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 disabled:bg-emerald-200 disabled:text-gray-500 disabled:cursor-not-allowed cursor-pointer w-full p-4 rounded-2xl font-semibold transition-all"
+                    >
                         Submit
                     </button>
                 </form>
